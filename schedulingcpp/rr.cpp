@@ -1,101 +1,133 @@
-#include<bits/stdc++.h>
-using namespace std;
-class Custom{
-    public:
-    int pid;
-    int arrival_time;
-    int burst_time;
-    int completion_time;
-    int tat;
-    int rt;
-    int wt;
-};
+#include <iostream>
 
+using namespace std;
+
+void queueUpdation(int queue[],int timer,int arrival[],int n, int maxProccessIndex){
+	int zeroIndex;
+	for(int i = 0; i < n; i++){
+		if(queue[i] == 0){
+			zeroIndex = i;
+			break;
+		}
+	}
+	queue[zeroIndex] = maxProccessIndex + 1;
+}
+
+void queueMaintainence(int queue[], int n){
+	for(int i = 0; (i < n-1) && (queue[i+1] != 0) ; i++){
+		int temp = queue[i];
+		queue[i] = queue[i+1];
+		queue[i+1] = temp;
+	}
+}
+
+void checkNewArrival(int timer, int arrival[], int n, int maxProccessIndex,int queue[]){
+	if(timer <= arrival[n-1]){
+	bool newArrival = false;
+	for(int j = (maxProccessIndex+1); j < n; j++){
+			if(arrival[j] <= timer){
+			if(maxProccessIndex < j){
+				maxProccessIndex = j;
+				newArrival = true;
+			}
+		}
+	}
+	if(newArrival)
+		queueUpdation(queue,timer,arrival,n, maxProccessIndex);
+	}
+}
 
 int main(){
-    cout<<"Round robin\n";
-    int n;
-    cout<<"Enter the number of process\n";
-    cin>>n;
-    Custom process[n];
-    int btime[n];
-    int demo[n];
-    for(int i=0;i<n;i++){
-        cout<<"Enter the arrival time for the process "<<i+1<<"\n";
-        cin>>process[i].arrival_time;
-        cout<<"Enter the burst time\n";
-        cin>>process[i].burst_time;
-        btime[i] = process[i].burst_time;
-        process[i].pid = i+1;
-    }
-    queue<int> q;
-    int visited[n];
-    int start_time = process[0].arrival_time;
-    for(int i=0;i<n;i++){
-        visited[i] =-1;
-        demo[i] =-1;
-    }
-    for(int i=0;i<n;i++){
-        if(process[i].arrival_time <= start_time){
-            q.push(i);
-            visited[i] = 0;
-        }
-    }
-    
-    
-    int tq = 2;
-    while(!q.empty()){
-        int k = q.front();
-        if(process[k].burst_time>tq){
-            if(visited[k] ==-1){
-                visited[k] = start_time;
-            }
-            if(demo[k] ==-1){
-                demo[k]  = start_time;
-            }
-            start_time +=tq;
-            process[k].burst_time -= tq;
-            q.pop();
-            for(int i=k+1;i<n;i++){
-                if(process[i].arrival_time<=start_time && (visited[i] == -1)){
-                    visited[i] = start_time; 
-                    q.push(i);
-                }
-            }
-            q.push(k);
-        }
-        else{
-            if(visited[k] == -1){
-                visited[k] = start_time;
-            }
-            if(demo[k] == -1){
-                demo[k] = start_time;
-            }
-            start_time += process[k].burst_time;
-            process[k].burst_time = 0;
-            process[k].completion_time = start_time;
-            process[k].tat = process[k].completion_time - process[k].arrival_time;
-            process[k].wt = process[k].tat - btime[k];
-            process[k].rt = visited[k]- process[k].arrival_time; 
-            q.pop();
-            for(int i=k+1;i<n;i++){
-                if(process[i].arrival_time<=start_time && (visited[i] == -1)){
-                    visited[i] = start_time; 
-                    q.push(i);
-                }
-            }
-        }
-    }
-		float awt=0,ata=0;
-    for(auto it:visited){cout<<it<<" ";}cout<<"\n";
-        cout<<"PID\t AT\t BT\t ct\t TAT\t WT\t RT\n";
-        for(int i=0;i<n;i++){
-            cout<<process[i].pid<<"\t"<<process[i].arrival_time<<"\t"<<btime[i]<<"\t"<<process[i].completion_time<<"\t"<<process[i].tat<<"\t"<<process[i].wt<<"\t"<<demo[i]-process[i].arrival_time<<"\n";
-            awt+=process[i].wt;
-            ata+=process[i].tat;
-        }
-    cout<<"\nAvg waiting time : "<<awt/n;
-    cout<<"\nAvg tat : "<<ata/n;
-    
-    return 0;
+	int n,tq, timer = 0, maxProccessIndex = 0;
+	float avgWait = 0, avgTT = 0;
+	cout << "\nEnter the time quanta : ";
+	cin>>tq;
+	cout << "\nEnter the number of processes : ";
+	cin>>n;
+	int arrival[n], burst[n], wait[n], turn[n], queue[n], temp_burst[n];
+	bool complete[n];
+
+	cout << "\nEnter the arrival time of the processes : ";
+	for(int i = 0; i < n; i++)
+		cin>>arrival[i];
+
+	cout << "\nEnter the burst time of the processes : ";
+	for(int i = 0; i < n; i++){
+		cin>>burst[i];
+		temp_burst[i] = burst[i];
+	}
+
+	for(int i = 0; i < n; i++){
+		complete[i] = false;
+		queue[i] = 0;
+	}
+	while(timer < arrival[0])
+		timer++;
+	queue[0] = 1;
+	
+	while(true){
+		bool flag = true;
+		for(int i = 0; i < n; i++){
+			if(temp_burst[i] != 0){
+				flag = false;
+				break;
+			}
+		}
+		if(flag)
+			break;
+
+		for(int i = 0; (i < n) && (queue[i] != 0); i++){
+			int ctr = 0;
+			while((ctr < tq) && (temp_burst[queue[0]-1] > 0)){
+				temp_burst[queue[0]-1] -= 1;
+				timer += 1;
+				ctr++;
+
+				checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+			}
+			if((temp_burst[queue[0]-1] == 0) && (complete[queue[0]-1] == false)){
+				turn[queue[0]-1] = timer;	
+				complete[queue[0]-1] = true;
+			}
+			
+			bool idle = true;
+			if(queue[n-1] == 0){
+				for(int i = 0; i < n && queue[i] != 0; i++){
+					if(complete[queue[i]-1] == false){
+						idle = false;
+					}
+				}
+			}
+			else
+				idle = false;
+
+			if(idle){
+				timer++;
+				checkNewArrival(timer, arrival, n, maxProccessIndex, queue);
+			}
+	
+			queueMaintainence(queue,n);
+		}
+	}
+
+	for(int i = 0; i < n; i++){
+		turn[i] = turn[i] - arrival[i];
+		wait[i] = turn[i] - burst[i];
+	}
+
+	cout << "\nProgram No.\tArrival Time\tBurst Time\tWait Time\tTurnAround Time"
+		<< endl;
+	for(int i = 0; i < n; i++){
+		cout<<i+1<<"\t\t"<<arrival[i]<<"\t\t"
+		<<burst[i]<<"\t\t"<<wait[i]<<"\t\t"<<turn[i]<<endl;
+	}
+	for(int i =0; i< n; i++){
+		avgWait += wait[i];
+		avgTT += turn[i];
+	}
+	cout<<"\nAverage wait time : "<<(avgWait/n)
+	<<"\nAverage Turn Around Time : "<<(avgTT/n);
+
+	return 0;
+	
 }
