@@ -86,11 +86,16 @@ int main(){
             }
         }
     }
+		float awt=0,ata=0;
     for(auto it:visited){cout<<it<<" ";}cout<<"\n";
         cout<<"PID\t AT\t BT\t ct\t TAT\t WT\t RT\n";
         for(int i=0;i<n;i++){
             cout<<process[i].pid<<"\t"<<process[i].arrival_time<<"\t"<<btime[i]<<"\t"<<process[i].completion_time<<"\t"<<process[i].tat<<"\t"<<process[i].wt<<"\t"<<demo[i]-process[i].arrival_time<<"\n";
+            awt+=process[i].wt;
+            ata+=process[i].tat;
         }
+    cout<<"\nAvg waiting time : "<<awt/n;
+    cout<<"\nAvg tat : "<<ata/n;
     
     return 0;
 }
