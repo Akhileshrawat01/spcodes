@@ -1,74 +1,96 @@
-#include <iostream>
+#include<bits/stdc++.h>
 using namespace std;
+class Custom{
+    public:
+    int pid;
+    int arrival_time;
+    int burst_time;
+    int completion_time;
+    int tat;
+    int rt;
+    int wt;
+};
+
 
 int main(){
-	int i,n,time,remain,temps=0,time_quantum;
-
-	int wt=0,tat=0;
-
-	cout<<"Enter the total number of process="<<endl;
-	cin>>n;
-
-	remain=n;
-	// assigning the number of process to remain variable
-
-	int at[10];
-	int bt[10];
-	int rt[10];
-
-
-	cout<<"Enter the Arrival time, Burst time for All the processes"<<endl;
-	for(i=0;i<n;i++)
-	{
-	  cout<<"Arrival time for process "<<i+1<<endl;
-		cin>>at[i];
-		cout<<"Burst time for process "<<i+1<<endl;
-		cin>>bt[i];
-		rt[i]=bt[i];
-	}
-
-	cout<<"Enter the value of time QUANTUM:"<<endl;
-	cin>>time_quantum;
-
-	cout<<"\n\nPid\tarr\tbur\ttat\twat\n\n";
-	for(time=0,i=0;remain!=0;)
-	{
-		if(rt[i]<=time_quantum && rt[i]>0)
-		{
-			time += rt[i];
-		
-			rt[i]=0;
-			temps=1;
-		}
-
-		else if(rt[i]>0)
-		{
-			rt[i] -= time_quantum;
-		
-			time += time_quantum;
-		
-		}
-
-		if(rt[i]==0 && temps==1)
-		{
-			remain--;
-            cout<<i+1<<"\t"<<at[i]<<"\t"<<bt[i]<<"\t"<<time-at[i]<<"\t"<<time-at[i]-bt[i]<<endl;
-
-			wt += time-at[i]-bt[i];
-			tat += time-at[i];
-			temps=0;
-		}
-
-		if(i == n-1)
-			i=0;
-		else if(at[i+1] <= time)
-			i++;
-		else
-			i=0;
-	}
-
-	cout<<"Average waiting time "<<wt*1.0/n<<endl;
-	cout<<"Average turn around time "<<tat*1.0/n<<endl;;
-
-	return 0;
+    cout<<"Round robin\n";
+    int n;
+    cout<<"Enter the number of process\n";
+    cin>>n;
+    Custom process[n];
+    int btime[n];
+    int demo[n];
+    for(int i=0;i<n;i++){
+        cout<<"Enter the arrival time for the process "<<i+1<<"\n";
+        cin>>process[i].arrival_time;
+        cout<<"Enter the burst time\n";
+        cin>>process[i].burst_time;
+        btime[i] = process[i].burst_time;
+        process[i].pid = i+1;
+    }
+    queue<int> q;
+    int visited[n];
+    int start_time = process[0].arrival_time;
+    for(int i=0;i<n;i++){
+        visited[i] =-1;
+        demo[i] =-1;
+    }
+    for(int i=0;i<n;i++){
+        if(process[i].arrival_time <= start_time){
+            q.push(i);
+            visited[i] = 0;
+        }
+    }
+    
+    
+    int tq = 2;
+    while(!q.empty()){
+        int k = q.front();
+        if(process[k].burst_time>tq){
+            if(visited[k] ==-1){
+                visited[k] = start_time;
+            }
+            if(demo[k] ==-1){
+                demo[k]  = start_time;
+            }
+            start_time +=tq;
+            process[k].burst_time -= tq;
+            q.pop();
+            for(int i=k+1;i<n;i++){
+                if(process[i].arrival_time<=start_time && (visited[i] == -1)){
+                    visited[i] = start_time; 
+                    q.push(i);
+                }
+            }
+            q.push(k);
+        }
+        else{
+            if(visited[k] == -1){
+                visited[k] = start_time;
+            }
+            if(demo[k] == -1){
+                demo[k] = start_time;
+            }
+            start_time += process[k].burst_time;
+            process[k].burst_time = 0;
+            process[k].completion_time = start_time;
+            process[k].tat = process[k].completion_time - process[k].arrival_time;
+            process[k].wt = process[k].tat - btime[k];
+            process[k].rt = visited[k]- process[k].arrival_time; 
+            q.pop();
+            for(int i=k+1;i<n;i++){
+                if(process[i].arrival_time<=start_time && (visited[i] == -1)){
+                    visited[i] = start_time; 
+                    q.push(i);
+                }
+            }
+        }
+    }
+    for(auto it:visited){cout<<it<<" ";}cout<<"\n";
+        cout<<"PID\t AT\t BT\t ct\t TAT\t WT\t RT\n";
+        for(int i=0;i<n;i++){
+            cout<<process[i].pid<<"\t"<<process[i].arrival_time<<"\t"<<btime[i]<<"\t"<<process[i].completion_time<<"\t"<<process[i].tat<<"\t"<<process[i].wt<<"\t"<<demo[i]-process[i].arrival_time<<"\n";
+        }
+    
+    return 0;
 }
