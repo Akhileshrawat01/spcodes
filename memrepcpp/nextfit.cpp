@@ -16,15 +16,15 @@ void NextFit(int blockSize[], int m, int processSize[], int n)
 
 	// pick each process and find suitable blocks
 	// according to its size ad assign to it
-    for(int i=0;i<m;i++){
-        for(;j<n;j++){
+    for(int i=0;i<n;i++){
+        for(;j<m;j++){
             if(blockSize[j]>=processSize[i]){
                 allocation[i]=j;
                 blockSize[j]-=processSize[i];
                 break;
             }
         }
-        j=(j+1)%n;
+        j=(j+1)%m;
     }
 
 	cout << "\nProcess No.\tProcess Size\tBlock no.\n";
