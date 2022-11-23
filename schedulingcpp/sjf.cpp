@@ -60,7 +60,7 @@ int main(){
         taty[i] = bt[i] + wt[i];
 
 
-	cout<<"\n\nPid\tarr\tbur\ttat\twat\n\n";
+	cout<<"\n\nPid\tarr\tbur\twat\ttat\n\n";
 	for (int i = 0; i < n; i++) {
         wat = wat + wt[i];
         tat = tat + taty[i];
